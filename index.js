@@ -10,85 +10,91 @@ import { spawn } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(__dirname);
-const { name, version } = require(join(__dirname, './package.json'));
+const { name, description, author, version } = require(join(__dirname, './package.json'));
+const { say } = cfonts;
 const rl = createInterface(process.stdin, process.stdout);
 
-const inicializarEntorno = () => {
-  const carpetas = ['tmp', 'Sesiones/Subbots', 'Sesiones/Principal'];
-  carpetas.forEach(dir => {
-    if (dir?.trim() && !existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
+function verify() {
+  const dirs = ['tmp', 'Sesiones/Subbots', 'Sesiones/Principal'];
+  for (const dir of dirs) {
+    if (typeof dir === 'string' && dir.trim() !== '') {
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true });
+      }
+    } else {
+      console.warn('Ruta inválida o no definida:', dir);
+    }
+  }
+}
+verify();
+
+// Diseño para ""
+say('DiDier', {
+  font: 'block', // Estilo 'block' para un diseño fuerte
+  align: 'center',
+  colors: ['red', 'white'], // Colores que recuerdan al Sharingan
+  background: 'black' // Fondo oscuro para resaltar el texto
+});
+
+say(`Developed By • DiDier`, {
+  font: 'console',
+  align: 'center',
+  colors: ['magenta']
+});
+
+let isRunning = false;
+let child;
+
+function start(file) {
+  if (isRunning) return;
+  isRunning = true;
+
+  const args = [join(__dirname, file), ...process.argv.slice(2)];
+  child = spawn('node', args, { stdio: ['inherit', 'inherit', 'inherit', 'ipc'] });
+
+  child.on('message', data => {
+    switch (data) {
+      case 'reset':
+        child.kill();
+        isRunning = false;
+        start(file);
+        break;
+      case 'uptime':
+        child.send(process.uptime());
+        break;
     }
   });
-};
 
-const mostrarBanner = () => {
-  cfonts.say('nox bot', {
-    font: 'block',
-    align: 'center',
-    colors: ['blue', 'white'],
-    background: 'black'
-  });
-
-  cfonts.say('Developed By • Nox Bot MD', {
-    font: 'console',
-    align: 'center',
-    colors: ['cyan']
-  });
-};
-
-let ejecucionActiva = false;
-let procesoHijo;
-
-const ejecutarProceso = (archivo) => {
-  if (ejecucionActiva) return;
-  ejecucionActiva = true;
-
-  const rutaArchivo = join(__dirname, archivo);
-  const argumentos = [rutaArchivo, ...process.argv.slice(2)];
-  
-  procesoHijo = spawn('node', argumentos, { stdio: ['inherit', 'inherit', 'inherit', 'ipc'] });
-
-  procesoHijo.on('message', codigo => {
-    if (codigo === 'reset') {
-      procesoHijo.kill();
-      ejecucionActiva = false;
-      ejecutarProceso(archivo);
-    } else if (codigo === 'uptime') {
-      procesoHijo.send(process.uptime());
-    }
-  });
-
-  procesoHijo.on('exit', estado => {
-    ejecucionActiva = false;
-    console.error('🚩 Error :\n', estado);
+  child.on('exit', (code) => {
+    isRunning = false;
+    console.error('🚩 Error :\n', code);
     process.exit();
   });
 
-  const opciones = yargs(process.argv.slice(2)).exitProcess(false).parse();
-  if (!opciones['test'] && !rl.listenerCount('line')) {
-    rl.on('line', entrada => {
-      if (procesoHijo?.connected) {
-        procesoHijo.send(entrada.trim());
-      }
-    });
+  const opts = yargs(process.argv.slice(2)).exitProcess(false).parse();
+  if (!opts['test']) {
+    if (!rl.listenerCount('line')) {
+      rl.on('line', line => {
+        if (child && child.connected) {
+          child.send(line.trim());
+        }
+      });
+    }
   }
 
-  watchFile(argumentos[0], () => {
-    unwatchFile(argumentos[0]);
-    if (procesoHijo) procesoHijo.kill();
-    ejecucionActiva = false;
-    ejecutarProceso(archivo);
+  watchFile(args[0], () => {
+    unwatchFile(args[0]);
+    if (child) child.kill();
+    isRunning = false;
+    start(file);
   });
-};
+}
 
-process.on('warning', alerta => {
-  if (alerta.name === 'MaxListenersExceededWarning') {
+process.on('warning', (warning) => {
+  if (warning.name === 'MaxListenersExceededWarning') {
     console.warn('🚩 Se excedió el límite de Listeners en :');
-    console.warn(alerta.stack);
+    console.warn(warning.stack);
   }
 });
 
-inicializarEntorno();
-mostrarBanner();
-ejecutarProceso('main.js');
+start('main.js');
