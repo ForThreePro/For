@@ -1,81 +1,71 @@
-// LISTA v1.2 - CON AVISO DOMINGO - FOR THREE CLEAN
-const TZ = 'America/Lima'
-const IMG_FALLBACK = 'https://raw.githubusercontent.com/bandidope/Fotos/refs/heads/master/fotos/logo.png'
-const DIAS = ['lunes','martes','miercoles','jueves','viernes','sabado']
-const ALL = [...DIAS, 'extra']
-const TAG = {lunes:'✅',martes:'✅',miercoles:'✅',jueves:'✅',viernes:'✅',sabado:'✅',extra:'📦',domingo:'🛒'}
+// DIAS v1.3 - TEXTO PERSONALIZADO - FOR THREE
+let handler = async (m, { conn, command, args, isAdmin, isOwner }) => {
+  let chat = m.chat
+  let cmd = command.toLowerCase()
+  let dias = ['lunes','martes','miercoles','jueves','viernes','sabado']
 
-const getDB = (chatId) => {
-  global.db.data.listaV2 ||= {}
-  global.db.data.listaV2[chatId] ||= Object.fromEntries(ALL.map(d => [d, []]))
-  return global.db.data.listaV2[chatId]
-}
-
-const hoyInfo = () => {
-  let d = new Date().toLocaleString('es-PE', { timeZone: TZ, weekday: 'long' }).toLowerCase()
-  d = d.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-  let esDomingo = d === 'domingo'
-  return {
-    diaDB: esDomingo? 'extra' : d,
-    esDomingo
+  // 1. CREAR DB
+  if (!global.db.data.dias) global.db.data.dias = {
+    lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: []
   }
-}
+  let db = global.db.data.dias
 
-let handler = async (m, { conn, args, isAdmin, isOwner }) => {
-  let db = getDB(m.chat)
-  let op = args[0]?.toLowerCase()
-  let { diaDB, esDomingo } = hoyInfo()
-
-  if (!op) return m.reply(
-`📋 *LISTA BOT* | Hoy: *${esDomingo? 'DOMINGO' : diaDB.toUpperCase()}*
-.lista add Nombre | Numero | Premio [| extra]
-.lista ver
-.lista reset -> Borra L-S
-.lista reset extra -> Borra EXTRA`
-  )
-
-  // VER
-  if (op === 'ver') {
-    let txt = `📋 *LISTA SEMANAL*\n»————————«\n`
-    for (let d of ALL) {
-      txt += `\n*${d.toUpperCase()}* [${db[d].length}]\n`
-      txt += db[d].length? db[d].map(x => `# ${x.n} | ${x.num} | ${x.p} ${x.tag}`).join('\n') : `> Vacío`
-    }
-    let img = IMG_FALLBACK
-    try { img = await conn.profilePictureUrl(m.chat, 'image') } catch {}
-    return conn.sendMessage(m.chat, { image: { url: img }, caption: txt }, { quoted: m }).catch(() => m.reply(txt))
-  }
-
-  // RESET = BORRAR
-  if (op === 'reset') {
+  // 2. SETDIA -> ANOTAR CON TEXTO
+  if (cmd.startsWith('set')) {
     if (!isAdmin &&!isOwner) return m.reply('❌ Solo admins')
-    let target = args[1] === 'extra'? ['extra'] : DIAS
-    target.forEach(d => db[d] = [])
-    await global.db.write().catch(()=>{})
-    return m.reply(`🗑️ Reset: *${target.join(', ').toUpperCase()}*`)
+    let dia = cmd.replace('set','')
+    if (!dias.includes(dia)) return m.reply('Dia invalido')
+
+    let mentions = m.mentionedJid
+    if (!mentions || mentions.length === 0) return m.reply(`Ejemplo:.set${dia} Texto | @usuario1 @usuario2`)
+
+    // Sacar texto antes del |
+    let textoCustom = ''
+    let fullText = args.join(' ')
+    if (fullText.includes('|')) {
+      textoCustom = fullText.split('|')[0].trim()
+    }
+
+    let nuevos = mentions.filter(x =>!db[dia].includes(x))
+    if (nuevos.length === 0) return m.reply(`> Ya estaban todos en ${dia.toUpperCase()}`)
+
+    db[dia].push(...nuevos)
+    global.db.write()
+
+    let nombres = nuevos.map(jid => '@' + jid.split('@')[0]).join(' ')
+    let titulo = textoCustom? `*${textoCustom}*` : `✅ Agregado a *${dia.toUpperCase()}*`
+    return m.reply(`${titulo}:\n${nombres}`, null, {mentions: nuevos})
   }
 
-  // ADD = ANOTAR CON AVISO SI ES DOMINGO
-  if (op === 'add') {
-    let raw = args.slice(1).join(' ')
-    if (!raw.includes('|')) return m.reply('Formato:.lista add Nombre | Numero | Premio [| extra]')
-    let [n, num, p, forzado] = raw.split('|').map(v => v.trim())
-    if (!n ||!num ||!p) return m.reply('Faltan datos')
+  // 3. RESETDIA -> BORRAR
+  if (cmd.startsWith('reset')) {
+    if (!isAdmin &&!isOwner) return m.reply('❌ Solo admins')
+    let dia = cmd.replace('reset','')
+    if (!dias.includes(dia)) return m.reply('Dia invalido')
 
-    let dia = forzado?.toLowerCase() === 'extra'? 'extra' : diaDB
-    let tag = dia === 'extra'? (esDomingo? TAG.domingo : TAG.extra) : TAG[dia]
+    let total = db[dia].length
+    db[dia] = []
+    global.db.write()
+    return m.reply(`🗑️ *${dia.toUpperCase()}* borrado. Se eliminaron ${total} personas.`)
+  }
 
-    db[dia].push({ n, num, p, tag })
-    await global.db.write().catch(()=>{})
+  // 4. DIA -> VER CON TEXTO
+  if (dias.includes(cmd)) {
+    let dia = cmd
+    if (db[dia].length === 0) return m.reply(`*${dia.toUpperCase()}*\n> Vacío`)
 
-    let aviso = esDomingo? `⚠️ *Es DOMINGO - Día de Ventas*\nSe guardó en EXTRA automático 🛒\n\n` : ''
-    return m.reply(`${aviso}${tag} *${dia.toUpperCase()}*\n# ${n} | ${num} | ${p}`)
+    let texto = `📅 *${dia.toUpperCase()}* [${db[dia].length}]\n\n`
+    texto += db[dia].map((jid, i) => `${i+1}. @${jid.split('@')[0]}`).join('\n')
+    return conn.reply(chat, texto, m, {mentions: db[dia]})
   }
 }
 
-handler.help = ['lista']
-handler.tags = ['main']
-handler.command = /^lista$/i
+handler.help = [
+  'setlunes Texto | @tag', 'lunes', 'resetlunes',
+  'setmartes Texto | @tag', 'martes', 'resetmartes'
+]
+handler.tags = ['staff sorteo']
+handler.command = /^(setlunes|setmartes|setmiercoles|setjueves|setviernes|setsabado|resetlunes|resetmartes|resetmiercoles|resetjueves|resetviernes|resetsabado|lunes|martes|miercoles|jueves|viernes|sabado)$/i
 handler.group = true
 handler.admin = true
 export default handler
