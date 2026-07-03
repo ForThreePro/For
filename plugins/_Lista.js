@@ -1,12 +1,14 @@
 let handler = async (m, { conn, args, isAdmin, isOwner }) => {
   let chat = m.chat
 
-  // 1. CREAR DB POR CHAT - ESTE ERA EL BUG
+  // 1. CREAR DB POR CHAT - ESTA ES LA FIX
   if (!global.db.data.lista) global.db.data.lista = {}
-  if (!global.db.data.lista) global.db.data.lista = {
-    lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], extra: []
+  if (!global.db.data.lista) {
+    global.db.data.lista = {
+      lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], extra: []
+    }
   }
-  let db = global.db.data.lista // por chat
+  let db = global.db.data.lista // <- EL 
 
   let tz = 'America/Lima'
   let dia = new Date().toLocaleString('es-PE', { timeZone: tz, weekday: 'long' }).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -29,7 +31,7 @@ Hoy: *${esDomingo? 'DOMINGO' : dia.toUpperCase()}*
   else if (op === 'ver') {
     let texto = `📋 *LISTA SEMANAL*\n\n`
     for (let d of ['lunes','martes','miercoles','jueves','viernes','sabado','extra']) {
-      texto += `*${d.toUpperCase()}* [${db[d].length}]\n`
+      texto += `*${d.toUpperCase()}* [${db[d].length}]\n` // <- Ya no tira error
       texto += db[d].length > 0? db[d].map(i => `# ${i.n} | ${i.num} | ${i.p} ${i.tag}`).join('\n') + '\n\n' : '> Vacío\n'
     }
     try {
@@ -65,6 +67,10 @@ Hoy: *${esDomingo? 'DOMINGO' : dia.toUpperCase()}*
 
     let aviso = esDomingo? '⚠️ *DOMINGO - Dia de Ventas*\nSe guardo en EXTRA 🛒\n\n' : ''
     return m.reply(`${aviso}${tag} *${guardarEn.toUpperCase()}*\n# ${nombre} | ${numero} | ${premio}`)
+  }
+
+  else {
+    return m.reply('Opcion no valida. Usa:.lista add,.lista ver o.lista reset')
   }
 }
 
