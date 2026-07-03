@@ -12,7 +12,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
         let texto = `╭━━━〔 *FOR THREE BOT 🌀* 〕━━━⬣
 ┃ 🤖 *Bot:* For Three Bot
 ┃ ⚡ *Prefijo:* ${usedPrefix}
-┃ 👑 *Dueño:* @${global.owner[0]}
+┃ 👑 *Dueño:* Whois Yallico
 ┃ 📦 *Versión:* 1.0
 ┃ 📅 *Fecha:* ${new Date().toLocaleDateString('es')}
 ╰━━━━━━━━━━━━⬣`
@@ -20,20 +20,11 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     }
 
     if (command == 'sc' || command == 'script') {
-        m.reply(`*FOR THREE BOT 🌀*\n*SCRIPT:* Privado\nContacta al owner para más info`)
+        m.reply(`*FOR THREE BOT 🌀*\n*SCRIPT:* Privado\nContacta a Whois Yallico para más info`)
     }
 
     if (command == 'donar' || command == 'donate') {
-        let texto = `*APOYAR A FOR THREE BOT 🌀* 💰\n\n*YAPE:* +51 936 994 155\nCualquier donación ayuda a mantener el bot activo 🫶\nGracias crack!`
-        m.reply(texto)
-    }
-
-    if (command == 'grupos' || command == 'grouplist') {
-        let groups = Object.entries(conn.chats).filter(([jid, chat]) => jid.endsWith('@g.us') && chat.isGroup)
-        let texto = `*GRUPOS DE FOR THREE BOT 🌀:* ${groups.length}\n\n`
-        for (let [jid, chat] of groups) {
-            texto += `├ ${chat.subject || 'Sin nombre'}\n`
-        }
+        let texto = `*APOYAR A FOR THREE BOT 🌀* 💰\n\n*YAPE:* +51 936 994 155\n*Nombre:* Cristhofer Rojas\nCualquier donación ayuda a mantener el bot activo 🫶\nGracias crack!`
         m.reply(texto)
     }
 
@@ -50,9 +41,8 @@ handler.help = [
     'info',
     'sc',
     'donar',
-    'grupos',
     'estadisticas'
 ]
 handler.tags = ['main']
-handler.command = ['ping', 'info', 'sc', 'script', 'donar', 'donate', 'grupos', 'grouplist', 'estadisticas', 'stats']
+handler.command = ['ping', 'info', 'sc', 'script', 'donar', 'donate', 'estadisticas', 'stats']
 export default handler
