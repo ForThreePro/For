@@ -27,22 +27,15 @@ let handler = async (m, { conn, usedPrefix, command }) => {
         let texto = `*APOYAR A FOR THREE BOT 🌀* 💰\n\n*YAPE:* +51 936 994 155\n*Nombre:* Cristhofer Rojas\nCualquier donación ayuda a mantener el bot activo 🫶\nGracias crack!`
         m.reply(texto)
     }
-
-    if (command == 'estadisticas' || command == 'stats') {
-        let uptime = process.uptime()
-        let horas = Math.floor(uptime / 3600)
-        let minutos = Math.floor(uptime / 60) % 60
-        m.reply(`*STATS FOR THREE BOT 🌀* 📊\n\n*Uptime:* ${horas}h ${minutos}m\n*Usuarios:* ${Object.keys(global.db.data.users).length}\n*Chats:* ${Object.keys(conn.chats).length}`)
-    }
 }
 
 handler.help = [
-    'ping',
-    'info',
-    'sc',
-    'donar',
-    'estadisticas'
+    '.ping',
+    '.info',
+    '.sc',
+    '.donar'
 ]
 handler.tags = ['main']
-handler.command = ['ping', 'info', 'sc', 'script', 'donar', 'donate', 'estadisticas', 'stats']
+handler.command = ['ping', 'info', 'sc', 'script', 'donar', 'donate']
+handler.cooldown = 3000 // cooldown de 3 seg para evitar spam
 export default handler
