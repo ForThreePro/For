@@ -1,55 +1,56 @@
-let juegos = {} // Memoria del juego por grupo
+let salas = {} // 1 sala por grupo
 
-let handler = async (m, { conn, command, mentionedJid }) => {
+let handler = async (m, { conn, command }) => {
     let chat = m.chat
+    salas ||= {}
 
-    // 1. COMANDO.TERMINAR
+    // 1..TERMINAR - Cancela lobby o juego
     if (command === 'terminar') {
-        if (juegos) {
-            let p1 = juegos.p1
-            let p2 = juegos.p2
-            delete juegos
-            return conn.sendMessage(chat, { text: `🛑 *JUEGO TERMINADO*\n@${p1.split('@')[0]} y @${p2.split('@')[0]} ya no se sienten más 😅`, mentions: [p1, p2] })
+        if (salas) {
+            delete salas
+            return m.reply('🛑 *Sala eliminada*. Nadie más se siente 😅')
         }
         return
     }
 
-    // 2. COMANDO.SIENTE - INICIAR JUEGO
+    // 2..SIENTE - CREAR LOBBY
     if (command === 'siente') {
-        if (juegos) return m.reply('❌ Ya hay un juego activo. Usen.terminar pa' + ' acabar')
-
-        let p1, p2;
-
-        // SI TAGGEAS A 2 PERSONAS, LOS ELIGES TÚ
-        if (mentionedJid.length >= 2) {
-            p1 = mentionedJid[0]
-            p2 = mentionedJid[1]
-            if (p1 === p2) return m.reply('❌ No puedes elegir a la misma persona 2 veces oe')
-        } else {
-            // SI NO TAGGEAS, EL BOT ELIGE RANDOM - AHORA CON ADMINS
-            let metadata = await conn.groupMetadata(chat)
-            let miembros = metadata.participants
-           .filter(p => p.id!== conn.user.jid && p.id!== m.sender) // <- QUITÉ!p.admin
-           .map(p => p.id)
-
-            if (miembros.length < 2) return m.reply('❌ Se necesitan mínimo 2 personas más en el grupo oe')
-
-            p1 = miembros[Math.floor(Math.random() * miembros.length)]
-            p2 = miembros.filter(v => v!== p1)[Math.floor(Math.random() * (miembros.length - 1))]
-        }
-
-        juegos = {
-            p1, p2,
-            turno: p1, // Empieza p1
-            activo: true
-        }
-
-        return conn.sendMessage(chat, { text: `🔥 *JUGUEMOS AL QUE SE SIENTE* 🔥\n\n@${p1.split('@')[0]} vs @${p2.split('@')[0]}\n\n👉 Empieza @${p1.split('@')[0]}\nResponde a este mensaje etiquetando a @${p2.split('@')[0]}\n\nTip: Pongan.terminar pa' acabar`, mentions: [p1, p2] })
+        if (salas) return m.reply('❌ Ya hay una sala activa. Usa.sala pa' + ' ver o.terminar pa' + ' borrar')
+        salas = { inscritos: [], estado: 'lobby' } // lobby = esperando gente
+        return m.reply(`🔥 *LOBBY: JUGUEMOS AL QUE SE SIENTE* 🔥\n\nAnótense con:.anotar\nMínimo 2 personas.\nCuando estén listos el admin pone:.empezar\n\n.sala = Ver inscritos`)
     }
 
-    // 3. LÓGICA DE TURNO
-    if (!juegos ||!juegos.activo) return
-    let game = juegos
+    // 3..ANOTAR - Apuntarse
+    if (command === 'anotar') {
+        if (!salas || salas.estado!== 'lobby') return m.reply('❌ No hay lobby activo. Crea uno con.siente')
+        if (salas.inscritos.includes(m.sender)) return m.reply('✅ Ya estás anotado pe')
+        salas.inscritos.push(m.sender)
+        return m.reply(`✅ @${m.sender.split('@')[0]} anotado. Total: *${salas.inscritos.length}*`, { mentions: [m.sender] })
+    }
+
+    // 4..SALA - Ver lista
+    if (command === 'sala') {
+        if (!salas) return m.reply('❌ No hay sala activa')
+        let lista = salas.inscritos.length? salas.inscritos.map((v,i) => `${i+1}. @${v.split('@')[0]}`).join('\n') : '> Vacío'
+        return m.reply(`*📋 SALA DE JUEGO*\nEstado: *${salas.estado}*\n\n${lista}`, { mentions: salas.inscritos })
+    }
+
+    // 5..EMPEZAR - Iniciar con los anotados
+    if (command === 'empezar') {
+        if (!salas || salas.estado!== 'lobby') return m.reply('❌ No hay lobby activo')
+        if (salas.inscritos.length < 2) return m.reply('❌ Se necesitan mínimo 2 personas anotadas oe')
+
+        let p1 = salas.inscritos[Math.floor(Math.random() * salas.inscritos.length)]
+        let p2 = salas.inscritos.filter(v => v!== p1)[Math.floor(Math.random() * (salas.inscritos.length - 1))]
+
+        salas = { p1, p2, turno: p1, estado: 'jugando', inscritos: salas.inscritos } // Guardamos inscritos por si acaso
+
+        return conn.sendMessage(chat, { text: `🎮 *EMPEZÓ EL JUEGO* 🎮\n\n@${p1.split('@')[0]} vs @${p2.split('@')[0]}\n\n👉 Empieza @${p1.split('@')[0]}\nResponde a este mensaje etiquetando a @${p2.split('@')[0]}\n\nTip: Pongan.terminar pa' acabar`, mentions: [p1, p2] })
+    }
+
+    // 6. LÓGICA DE TURNO - SOLO SI ESTADO = JUGANDO
+    if (!salas || salas.estado!== 'jugando') return
+    let game = salas
 
     if (m.sender!== game.turno ||!m.quoted ||!m.quoted.fromMe) return
 
@@ -58,15 +59,14 @@ let handler = async (m, { conn, command, mentionedJid }) => {
 
     if (mencionado!== otro) return conn.sendMessage(chat, { text: `❌ Etiqueta a @${otro.split('@')[0]} pe`, mentions: })
 
-    // 4. CAMBIAR TURNO
     game.turno = otro
     await m.react('😏')
 
     return conn.sendMessage(chat, { text: `👉 Te toca @${otro.split('@')[0]}\nResponde a este mensaje etiquetando a @${game.turno === game.p1? game.p2 : game.p1}`, mentions: [otro, game.turno === game.p1? game.p2 : game.p1] })
 }
 
-handler.help = ['siente @tag @tag', 'terminar']
+handler.help = ['siente']
 handler.tags = ['fun']
-handler.command = ['siente', 'terminar']
+handler.command = ['siente', 'anotar', 'sala', 'empezar', 'terminar']
 handler.group = true
 export default handler
