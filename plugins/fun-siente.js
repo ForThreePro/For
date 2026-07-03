@@ -3,24 +3,25 @@ let juegos = {} // Memoria del juego por grupo
 let handler = async (m, { conn, command }) => {
     let chat = m.chat
 
-    // 1. COMANDO.TERMINAR - Cualquiera de los 2 puede usarlo
+    // 1. COMANDO.TERMINAR
     if (command === 'terminar') {
         if (juegos[chat]) {
             let p1 = juegos[chat].p1
             let p2 = juegos[chat].p2
             delete juegos[chat]
-            return m.reply(`🛑 *JUEGO TERMINADO*\n@${p1.split('@')[0]} y @${p2.split('@')[0]} ya no se sienten más 😅`, { mentions: [p1, p2] })
+            return conn.sendMessage(chat, { text: `🛑 *JUEGO TERMINADO*\n@${p1.split('@')[0]} y @${p2.split('@')[0]} ya no se sienten más 😅`, mentions: [p1, p2] })
         }
-        return // Si no hay juego, no hace nada
+        return
     }
 
     // 2. COMANDO.SIENTE - INICIAR JUEGO
     if (command === 'siente') {
         if (juegos[chat]) return m.reply('❌ Ya hay un juego activo. Usen.terminar pa' + ' acabar')
 
-        let miembros = (await conn.groupMetadata(chat)).participants
-          .filter(p => p.id!== conn.user.jid && p.id!== m.sender) // Sin bot y sin el que inicia
-          .map(p => p.id)
+        let metadata = await conn.groupMetadata(chat)
+        let miembros = metadata.participants
+         .filter(p => p.id!== conn.user.jid && p.id!== m.sender &&!p.admin) // Sin bot, sin el que inicia, sin admins
+         .map(p => p.id)
 
         if (miembros.length < 2) return m.reply('❌ Se necesitan mínimo 2 personas más en el grupo oe')
 
@@ -33,7 +34,7 @@ let handler = async (m, { conn, command }) => {
             activo: true
         }
 
-        return m.reply(`🔥 *JUGUEMOS AL QUE SE SIENTE* 🔥\n\n@${p1.split('@')[0]} vs @${p2.split('@')[0]}\n\n👉 Empieza @${p1.split('@')[0]}\nResponde a este mensaje etiquetando a @${p2.split('@')[0]}\n\nTip: Pongan.terminar pa' acabar`, { mentions: [p1, p2] })
+        return conn.sendMessage(chat, { text: `🔥 *JUGUEMOS AL QUE SE SIENTE* 🔥\n\n@${p1.split('@')[0]} vs @${p2.split('@')[0]}\n\n👉 Empieza @${p1.split('@')[0]}\nResponde a este mensaje etiquetando a @${p2.split('@')[0]}\n\nTip: Pongan.terminar pa' acabar`, mentions: [p1, p2] })
     }
 
     // 3. LÓGICA DE TURNO - SOLO SI HAY JUEGO
@@ -47,17 +48,17 @@ let handler = async (m, { conn, command }) => {
     let mencionado = m.mentionedJid[0]
     let otro = game.turno === game.p1? game.p2 : game.p1
 
-    if (mencionado!== otro) return m.reply(`❌ Etiqueta a @${otro.split('@')[0]} pe`, { mentions: [otro] })
+    if (mencionado!== otro) return conn.sendMessage(chat, { text: `❌ Etiqueta a @${otro.split('@')[0]} pe`, mentions: [otro] }) // <- FIX AQUÍ
 
     // 4. CAMBIAR TURNO
     game.turno = otro
     await m.react('😏')
 
-    return m.reply(`👉 Te toca @${otro.split('@')[0]}\nResponde a este mensaje etiquetando a @${game.turno === game.p1? game.p2 : game.p1}`, { mentions: [otro, game.turno === game.p1? game.p2 : game.p1] })
+    return conn.sendMessage(chat, { text: `👉 Te toca @${otro.split('@')[0]}\nResponde a este mensaje etiquetando a @${game.turno === game.p1? game.p2 : game.p1}`, mentions: [otro, game.turno === game.p1? game.p2 : game.p1] })
 }
 
 handler.help = ['siente', 'terminar']
 handler.tags = ['fun']
-handler.command = ['siente', 'terminar'] // <- Acepta los 2 comandos
+handler.command = ['siente', 'terminar']
 handler.group = true
 export default handler
