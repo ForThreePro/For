@@ -52,7 +52,7 @@ handler.before = async function (m, { conn, groupMetadata }) {
     switch (m.messageStubType) {
       case WAMessageStubType.GROUP_PARTICIPANT_ADD:
         txt = chat.customWelcome ? chat.customWelcome.replace(/@user/gi, userTag).replace(/@group/gi, groupName).replace(/@desc/gi, groupDesc) : 
-        `😏 *Vaya, alguien nuevo...*\n\nBienvenido ${userTag} a *${groupName}*.\n\n📂 *REGISTRO DE ACCESO:*\n│ 👤 *Miembro:* #${membersCount}\n│ 🛠️ *Creador: Barboza*\n│ 📝 *Info:* ${groupDesc}\n\n> Intenta no hacer que te echen rápido.`;
+        `😏 *Vaya, alguien nuevo...*\n\nBienvenido ${userTag} a *${groupName}*.\n\n📂 *REGISTRO DE ACCESO:*\n│ 👤 *Miembro:* #${membersCount}\n│ 🛠️ *Creador: Whois*\n│ 📝 *Info:* ${groupDesc}\n\n> Intenta no hacer que te echen rápido.`;
         break
 
       case WAMessageStubType.GROUP_PARTICIPANT_LEAVE:
