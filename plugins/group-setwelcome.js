@@ -3,28 +3,23 @@ const handler = async (m, { conn, text, command, isAdmin, isOwner }) => {
         return m.reply('❌ ¡Solo los administradores o el dueño pueden usar estos comandos!');
     }
 
-    let chat = global.db.data.chats[m.chat] || {};
-    if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = chat;
+    let chat = global.db.data.chats[m.chat]??= {}
 
     if (command === 'setwelcome') {
-        if (!text) return m.reply('❌ Por favor, proporciona un mensaje. Placeholders: `@user`, `@group`, `@count`, `@desc`');
+        if (!text) return m.reply('❌ Por favor, proporciona un mensaje.\n*Placeholders:* `@user` `@group` `@count` `@desc`\n\n*Ejemplo:* .setwelcome Bienvenido @user a @group. Eres el miembro #@count');
         chat.customWelcome = text.trim();
 
-        await conn.sendMessage(m.chat, {
-          text: `✅ *Bienvenida personalizada establecida*\n\n\`\`${text.trim()}\`\``,
-          footer: 'Toca el botón para volver al mensaje por defecto',
-          buttons: [{buttonId: '.delwelcome', buttonText: {displayText: '🗑️ Quitar editada'}, type: 1}],
-          headerType: 1
-        }, { quoted: m });
+        return m.reply(`✅ *Bienvenida personalizada establecida*\n\n\`\`${text.trim()}\`\n\nPara quitarla usa: .delwelcome`);
 
     } else if (command === 'delwelcome') {
         if (!chat.customWelcome) return m.reply('⚠️ No tienes una bienvenida editada.');
         delete chat.customWelcome;
-        m.reply('✅ *Listo*\n\nSe eliminó la bienvenida personalizada. Ahora se usa la de `welcome.js`.');
+        return m.reply('✅ *Listo*\n\nSe eliminó la bienvenida personalizada. Ahora se usa la de `welcome.js`.');
     }
 };
 handler.help = ['setwelcome <mensaje>', 'delwelcome'];
-handler.tags = ['group', 'config'];
-handler.command = ['setwelcome', 'delwelcome'];
+handler.tags = ['group'];
+handler.command = /^(setwelcome|delwelcome)$/i;
 handler.admin = true;
+handler.group = true;
 export default handler;
