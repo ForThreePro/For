@@ -30,10 +30,10 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 }
 
 handler.help = [
-    '.ping',
-    '.info',
-    '.sc',
-    '.donar'
+    'ping',
+    'info',
+    'sc',
+    'donar'
 ]
 handler.tags = ['main']
 handler.command = ['ping', 'info', 'sc', 'script', 'donar', 'donate']
