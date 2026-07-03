@@ -12,19 +12,6 @@ if (command == 'vibra') {
     return m.reply(`*ANALIZANDO TU VIBRA...* 🌀\n\n@${m.sender.split('@')[0]} eres: *${res}*\nNivel: ${Math.floor(Math.random()*100)}%`, null, { mentions: [m.sender] })
 }
 
-else if (command == 'frase') {
-    let frases = [
-        "El código sin café es como bot sin host",
-        "Si no funciona, reinícialo. Si funciona, no lo toques",
-        "Dormir es para los bots débiles",
-        "Un bug al día mantiene al programador vivo",
-        "Yapear es de pros 👑",
-        "FOR THREE no falla, el que falla es el host"
-    ]
-    let frase = frases[Math.floor(Math.random() * frases.length)]
-    return m.reply(`*FRASE DE WHOIS* 👑\n\n"${frase}"`)
-}
-
 else if (command == 'suerte') {
     let premios = [
         'Bot Personalizado 🌀', 'Bot para Grupo VIP 👑', 'Comando a tu gusto ⚡',
@@ -35,19 +22,31 @@ else if (command == 'suerte') {
 }
 
 else if (command == 'coquetea') {
-    let piropos = ['Eres más lindo que mi código sin bugs 😏', 'Si fueras error, yo te debugueo toda la noche', 'Tu número o te hago spam con piropos']
+    let piropos = [
+        'Si la belleza fuera delito, tú tendrías cadena perpetua 😏',
+        'No soy fotógrafo pero me imagino contigo en mi futuro',
+        'Me caes bien... ¿y si nos caemos bien juntos? 💘',
+        '¿Crees en amor a primera vista o paso otra vez? 👀',
+        'Eres el error 404... porque no te encuentro en mi vida todavía'
+    ]
     let p = piropos[Math.floor(Math.random() * piropos.length)]
     return m.reply(`*COQUETEO FOR THREE* 💘\n\n@${m.sender.split('@')[0]} ${p}`, null, { mentions: [m.sender] })
 }
 
 else if (command == 'insulta') {
-    let insultos = ['Eres más lento que internet de claro', 'Tu cerebro tiene menos ram que mi bot', 'Hasta el bot de al lado programa mejor']
+    let insultos = [
+        'Tienes cara de que te abandonaron en el menú de configuración',
+        'Si la estupidez doliera, andarías gritando todo el día',
+        'Eres tan inútil que ni para estorbar sirves',
+        'Tu IQ es tan bajo que se ahoga en un vaso de agua',
+        'Pareces error de sistema: nadie te quiere y todos te reinician'
+    ]
     let i = insultos[Math.floor(Math.random() * insultos.length)]
     return m.reply(`*INSULTO FOR THREE* 💀\n\n@${m.sender.split('@')[0]} ${i}`, null, { mentions: [m.sender] })
 }
 
 }
-handler.help = ['vibra','frase','suerte','coquetea','insulta']
-handler.tags = ['fun']
-handler.command = ['vibra','frase','suerte','coquetea','insulta']
+handler.help = ['vibra','suerte','coquetea','insulta']
+handler.tags = ['for-three']
+handler.command = ['vibra','suerte','coquetea','insulta']
 export default handler
