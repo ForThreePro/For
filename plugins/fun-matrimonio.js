@@ -4,8 +4,8 @@ let handler = async (m, { conn, command }) => {
     chatData.matrimonios = chatData.matrimonios || {}
     chatData.pedidas = chatData.pedidas || {}
 
-    let quien = m.sender
-    let conQuien = m.mentionedJid?.[0]
+    let quien = m.sender.replace(/@lid/g, '@s.whatsapp.net') // [FIX LID]
+    let conQuien = m.mentionedJid?.[0]?.replace(/@lid/g, '@s.whatsapp.net') // [FIX LID]
 
     // ===== PEDIR =====
     if (command == 'pedir') {
@@ -15,7 +15,7 @@ let handler = async (m, { conn, command }) => {
         if (chatData.matrimonios[conQuien]) return m.reply(`❌ @${conQuien.split('@')[0]} ya está casado/a`, null, { mentions: [conQuien] })
         if (chatData.pedidas[conQuien]) return m.reply('❌ Esa persona ya tiene una propuesta pendiente')
 
-        chatData.pedidas[conQuien] = quien
+        chatData.pedidas[conQuien] = quien // Guardamos con JID normal
 
         let txt = `💍 *PEDIDA DE MANO* 💍\n\n@${quien.split('@')[0]} le ha pedido matrimonio a @${conQuien.split('@')[0]}\n\n@${conQuien.split('@')[0]} usa.aceptar o.rechazar`
         return conn.sendMessage(chat, { text: txt, mentions: [quien, conQuien] })
@@ -23,7 +23,7 @@ let handler = async (m, { conn, command }) => {
 
     // ===== ACEPTAR =====
     if (command == 'aceptar') {
-        let pedidor = chatData.pedidas[quien]
+        let pedidor = chatData.pedidas[quien] // Busca con JID normal
         if (!pedidor) return m.reply('❌ No tienes ninguna propuesta de matrimonio')
 
         chatData.matrimonios[quien] = pedidor
