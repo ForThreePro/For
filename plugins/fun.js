@@ -1,39 +1,53 @@
 let handler = async (m, { conn, usedPrefix, command, text }) => {
 
+// ANTI-SPAM 3 SEG
+if (global.cooldown == undefined) global.cooldown = {}
+if (global.cooldown[m.sender] && Date.now() - global.cooldown[m.sender] < 3000)
+    return
+global.cooldown[m.sender] = Date.now()
+
 if (command == 'vibra') {
-    let vibra = ['😈 Diabólico', '😇 Angelical', '🤓 Nerd', '😎 Pro', '🤡 Chistoso', '😴 Dormilón']
+    let vibra = ['😈 Diabólico', '😇 Angelical', '🤓 Nerd PRO', '😎 Crack', '🤡 Rey del humor', '😴 Zzz', '🥶 Serio', '💀 Tóxico']
     let res = vibra[Math.floor(Math.random() * vibra.length)]
-    m.reply(`*ANALIZANDO TU VIBRA...* 🌀\n\n@${m.sender.split('@')[0]} eres: *${res}*`, null, { mentions: [m.sender] })
+    m.reply(`*ANALIZANDO TU VIBRA...* 🌀\n\n@${m.sender.split('@')[0]} eres: *${res}*\nNivel: ${Math.floor(Math.random()*100)}%`, null, { mentions: [m.sender] })
 }
 
 if (command == 'frase') {
     let frases = [
         "El código sin café es como bot sin host",
         "Si no funciona, reinícialo. Si funciona, no lo toques",
-        "Dormir es para los bots débiles"
+        "Dormir es para los bots débiles",
+        "Un bug al día mantiene al programador vivo",
+        "Yapear es de pros 👑",
+        "FOR THREE no falla, el que falla es el host"
     ]
     let frase = frases[Math.floor(Math.random() * frases.length)]
     m.reply(`*FRASE DE WHOIS* 👑\n\n"${frase}"`)
 }
 
 if (command == 'suerte') {
-    let premios = ['Bot Personalizado 🌀', 'Bot para Grupo VIP 👑', 'Comando a tu gusto ⚡', 'Nada 😢 Suerte para la próxima']
+    let premios = [
+        'Bot Personalizado 🌀', 'Bot para Grupo VIP 👑', 'Comando a tu gusto ⚡',
+        '10 soles al yape 💸', 'Nada 😢 Suerte para la próxima'
+    ]
     let premio = premios[Math.floor(Math.random() * premios.length)]
     m.reply(`*RULETA FOR THREE* 🎰\n\n@${m.sender.split('@')[0]} te tocó: *${premio}*\n\nSi ganaste algo escríbeme: wa.me/51936994155`, null, { mentions: [m.sender] })
 }
 
-if (command == 'nota') {
-    global.notas = global.notas || {}
-    if (!text) return m.reply(`*BLOC DE NOTAS* 📝\n.nota guardar [texto]\n.nota ver\n.nota borrar`)
-    let [tipo,...txt] = text.split(' ')
-    txt = txt.join(' ')
-    if (tipo == 'guardar') { global.notas[m.sender] = txt; m.reply(`✅ Guardado: "${txt}"`) }
-    if (tipo == 'ver') m.reply(`📝 Tu nota: "${global.notas[m.sender] || 'Vacía'}"`)
-    if (tipo == 'borrar') { delete global.notas[m.sender]; m.reply(`🗑️ Borrado`) }
+if (command == 'coquetea') {
+    let piropos = ['Eres más lindo que mi código sin bugs 😏', 'Si fueras error, yo te debugueo toda la noche', 'Tu número o te hago spam con piropos']
+    let p = piropos[Math.floor(Math.random() * piropos.length)]
+    m.reply(`*COQUETEO FOR THREE* 💘\n\n@${m.sender.split('@')[0]} ${p}`, null, { mentions: [m.sender] })
+}
+
+if (command == 'insulta') {
+    let insultos = ['Eres más lento que internet de claro', 'Tu cerebro tiene menos ram que mi bot', 'Hasta el bot de al lado programa mejor']
+    let i = insultos[Math.floor(Math.random() * insultos.length)]
+    m.reply(`*INSULTO FOR THREE* 💀\n\n@${m.sender.split('@')[0]} ${i}`, null, { mentions: [m.sender] })
 }
 
 }
-handler.help = ['vibra','frase','suerte','nota']
+handler.help = ['vibra','frase','suerte','coquetea','insulta']
 handler.tags = ['for-three']
-handler.command = ['vibra','frase','suerte','nota']
+handler.command = ['vibra','frase','suerte','coquetea','insulta']
 export default handler
