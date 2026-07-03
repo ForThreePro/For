@@ -81,7 +81,7 @@ const handler = async (m, { isOwner, isAdmin, conn, participants, args }) => {
     `;
 
     // Aquí va la imagen (pon tu URL en 'url')
-    const imageUrl = 'https://files.evogb.win/jgBvm8.jpg';
+    const imageUrl = 'https://raw.githubusercontent.com/bandidope/Fotos/refs/heads/master/fotos/logo.png';
 
     await conn.sendMessage(m.chat, {
       image: { url: imageUrl },
