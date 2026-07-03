@@ -23,6 +23,6 @@ let handler = async (m, { conn, usedPrefix }) => {
 }
 
 handler.help = ['creador ( Bot De WhatsApp )']
-handler.tags = ['ventasbot'] // <-- AQUÍ ESTÁ EL CAMBIO BRO
+handler.tags = ['ventas bot'] // <-- AQUÍ ESTÁ EL CAMBIO BRO
 handler.command = /^(creador)$/i
 export default handler
