@@ -21,8 +21,8 @@ let handler = async (m, { conn, args, isAdmin, isOwner }) => {
   if (!op) return m.reply(`*LISTA BOT*
 Hoy: *${esDomingo? 'DOMINGO' : dia.toUpperCase()}*
 
-.lista Nombre | Numero | Premio
-.lista Nombre | Numero | Premio | extra
+.lista add Nombre | Numero | Premio
+.lista add Nombre | Numero | Premio | extra
 .lista ver
 .lista reset
 .lista reset extra`)
@@ -65,25 +65,29 @@ Hoy: *${esDomingo? 'DOMINGO' : dia.toUpperCase()}*
     return
   }
 
-  // 6. ANOTAR DIRECTO SIN ADD
-  let juntar = args.join(' ')
-  let sep = juntar.split('|').map(v => v.trim())
-  let [nombre, numero, premio, extra] = sep
+  // 6. ADD/ANOTAR
+  if (op === 'add') {
+    let juntar = args.slice(1).join(' ')
+    let sep = juntar.split('|').map(v => v.trim())
+    let [nombre, numero, premio, extra] = sep
 
-  if (!nombre ||!numero ||!premio) return m.reply('Formato mal. Usa:.lista Nombre | Numero | Premio')
+    if (!nombre ||!numero ||!premio) return m.reply('Formato mal. Usa:.lista add Nombre | Numero | Premio')
 
-  let guardarEn = extra?.toLowerCase() === 'extra'? 'extra' : diaGuardar
-  let tag = guardarEn === 'extra'? (esDomingo? '🛒' : '📦') : '✅'
+    let guardarEn = extra?.toLowerCase() === 'extra'? 'extra' : diaGuardar
+    let tag = guardarEn === 'extra'? (esDomingo? '🛒' : '📦') : '✅'
 
-  db[guardarEn].push({n: nombre, num: numero, p: premio, tag: tag})
-  global.db.write()
+    db[guardarEn].push({n: nombre, num: numero, p: premio, tag: tag})
+    global.db.write()
 
-  let aviso = esDomingo? '⚠️ *DOMINGO - Dia de Ventas*\nSe guardo en EXTRA 🛒\n\n' : ''
-  return m.reply(`${aviso}${tag} *${guardarEn.toUpperCase()}*\n# ${nombre} | ${numero} | ${premio}`)
+    let aviso = esDomingo? '⚠️ *DOMINGO - Dia de Ventas*\nSe guardo en EXTRA 🛒\n\n' : ''
+    return m.reply(`${aviso}${tag} *${guardarEn.toUpperCase()}*\n# ${nombre} | ${numero} | ${premio}`)
+  }
+
+  return m.reply('Opcion no valida. Usa:.lista add,.lista ver o.lista reset')
 }
 
 handler.help = [
-  'lista Nombre | Numero | Premio',
+  'lista add Nombre | Numero | Premio',
   'lista ver',
   'lista reset'
 ]
