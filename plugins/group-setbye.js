@@ -18,7 +18,7 @@ const handler = async (m, { conn, text, command, isAdmin, isOwner }) => {
     }
 };
 handler.help = ['setbye <Mensaje>', 'delbye'];
-handler.tags = ['group''];
+handler.tags = ['group'];
 handler.command = /^(setbye|delbye)$/i;
 handler.admin = true;
 handler.group = true;
