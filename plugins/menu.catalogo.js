@@ -1,9 +1,9 @@
 let handler = async (m, { conn }) => {
   let txt = `*📋 [ CATÁLOGO FOR THREE ]*\n\n`
-  txt += `*🥉 BASIC* S/10\n> Bot limpio +20 cmds\n`
-  txt += `*🥈 PREMIUM* S/15\n> Bot full +40 cmds + Autoresponder\n`
-  txt += `*🥇 VIP* S/25\n> Bot full + Menú custom + Tu logo\n`
-  txt += `*Paga al:* Yape/Plin +51 936 994 155\n`
+  txt += `*🥉 Bot Para Grupo S/5\n> Bot limpio +100 cmds funcionales\n`
+  txt += `*🥈 Servidor Hosting* S/10\n> Servidor Activo 24/7\n`
+  txt += `*🥇 Bot Personalizado* S/30\n> Bot full + Menú custom + Tu logo + servidor gratis 1 Mes\n`
+  txt += `*Paga al:* Yape +51 936 994 155\n`
   txt += `*Comprar:*.comprarbot`
   m.reply(txt)
 }
