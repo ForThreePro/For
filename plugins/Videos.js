@@ -28,7 +28,7 @@ let listaVideos = [
     global.db.data.users[m.sender].videoIndex = i + 1
 }
 
-handler.help = ['videos']
+handler.help = ['videos ( Xxx )']
 handler.tags = ['+18']
 handler.command = /^(videos)$/i
 
