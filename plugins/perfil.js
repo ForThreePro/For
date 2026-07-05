@@ -1,14 +1,12 @@
-import fetch from 'node-fetch'
-
-let handler = async (m, { conn }) => {
+let handler = async (m, { conn, args, usedPrefix, command }) => {
     let user = m.sender
-    let name = await conn.getName(user)
+    let name = conn.getName(user)
     let tag = '@' + user.split('@')[0]
     let nivel = Math.floor(Math.random() * 100) + 1
     let xp = Math.floor(Math.random() * 5000)
     let monedas = Math.floor(Math.random() * 10000)
 
-    // Detectar Rey/Reyna
+    // Rey/Reyna
     let esMujer = /a$|ina$|y$/i.test(name.split(' ')[0])
     let rango = ''
     if (nivel < 10) rango = 'Mongol@ 💀'
@@ -18,36 +16,32 @@ let handler = async (m, { conn }) => {
     else if (nivel < 95) rango = 'El más Bot del grupo 👑'
     else rango = esMujer? 'Reyna del grupo 👑' : 'Rey del grupo 👑'
 
-    let txt = `╭━━〔 *PERFIL REAL* 〕━━╮
-┃
-┃ *Usuario:* ${name}
-┃ *Tag:* ${tag}
-┃ *Título:* ${rango}
-┃ *Nivel:* ${nivel} ⭐
-┃ *XP:* ${xp}/5000
-┃ *Coins:* ${monedas} 💎
-┃ *País:* Perú 🇵🇪
-┃
-╰━━━━━━━━━━╯
+    let txt = `*👤 PERFIL REAL*
 
-${rango.includes('Rey')? '👑 Todos inclínense ante su majestad' : 'Sigue subiendo para ser Rey/Reyna'}`
+*Usuario:* ${name}
+*Tag:* ${tag}
+*Título:* ${rango}
+*Nivel:* ${nivel} ⭐
+*XP:* ${xp}/5000
+*Coins:* ${monedas} 💎
+*País:* Perú 🇵🇪
 
-    // SACAR FOTO
+${rango.includes('Rey')? '👑 Todos inclínense ante su majestad' : 'Sigue subiendo'}`
+
+    // Foto
     let pp
     try {
-        if (m.isGroup) {
-            pp = await conn.profilePictureUrl(m.chat, 'image')
-        } else {
-            pp = await conn.profilePictureUrl(user, 'image')
-        }
+        pp = await conn.profilePictureUrl(m.isGroup? m.chat : user, 'image')
     } catch {
         pp = 'https://i.imgur.com/2dzxI5A.png'
     }
 
-    await conn.sendFile(m.chat, pp, 'perfil.jpg', txt, m, false, { mentions: })
+    conn.sendMessage(m.chat, { image: { url: pp }, caption: txt, mentions: })
 }
 
 handler.help = ['perfil']
 handler.tags = ['main']
-handler.command = ['perfil', 'profile', 'p']
+handler.command = /^perfil|profile|p$/i // <- IMPORTANTE: así detecta.perfil
+handler.group = false // funciona en grupo y pv
+
 export default handler
