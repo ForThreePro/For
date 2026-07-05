@@ -21,4 +21,5 @@ handler.help = ['frase']
 handler.tags = ['fun']
 handler.command = /^(frase)$/i
 handler.group = true
+handler.description = 'Manda una frase random de 120 opciones' // <- AGREGA ESTO
 export default handler
