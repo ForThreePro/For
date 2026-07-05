@@ -7,12 +7,15 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isR
   let bot = global.db.data.settings[conn.user.jid] || {}
   let type = command.toLowerCase()
 
-  if (!args[0]) return m.reply(`🤖 *⚙️ *Configuración incorrecta.*\n📌 Uso: *${usedPrefix + command} on* o *${usedPrefix + command} off*`)
+  if (!args[0]) return m.reply(`🤖 *⚙️ Configuración incorrecta.*\n📌 Uso: *${usedPrefix + command} on* o *${usedPrefix + command} off*`)
+
+  if (!chat) global.db.data.chats[m.chat] = {}
+  if (!bot) global.db.data.settings[conn.user.jid] = {}
 
   let fail = false
   switch (type) {
     case 'welcome': case 'bienvenida':
-      if (m.isGroup && !isAdmin) { global.dfail('admin', m, conn); fail = true; break }
+      if (m.isGroup &&!isAdmin) { global.dfail('admin', m, conn); fail = true; break }
       chat.bienvenida = isEnable
       break
     case 'subbots': case 'serbot':
@@ -24,23 +27,23 @@ let handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isR
       bot.antiSpam = isEnable
       break
     case 'antilink':
-      if (m.isGroup && !isAdmin) { global.dfail('admin', m, conn); fail = true; break }
+      if (m.isGroup &&!isAdmin) { global.dfail('admin', m, conn); fail = true; break }
       chat.antiLink = isEnable
       break
-case 'detect':
-      if (m.isGroup && !isAdmin) { global.dfail('admin', m, conn); fail = true; break }
+    case 'detect':
+      if (m.isGroup &&!isAdmin) { global.dfail('admin', m, conn); fail = true; break }
       chat.detect = isEnable
       break
     case 'antibot':
-      if (m.isGroup && !isAdmin) { global.dfail('admin', m, conn); fail = true; break }
+      if (m.isGroup &&!isAdmin) { global.dfail('admin', m, conn); fail = true; break }
       chat.antiBot = isEnable
       break
     case 'modoadmin':
-      if (m.isGroup && !isAdmin) { global.dfail('admin', m, conn); fail = true; break }
+      if (m.isGroup &&!isAdmin) { global.dfail('admin', m, conn); fail = true; break }
       chat.modoadmin = isEnable
       break
     case 'nsfw': case 'antinopor':
-      if (m.isGroup && !isAdmin) { global.dfail('admin', m, conn); fail = true; break }
+      if (m.isGroup &&!isAdmin) { global.dfail('admin', m, conn); fail = true; break }
       chat.nsfw = isEnable
       break
     case 'audios':
@@ -68,7 +71,7 @@ case 'detect':
     catalogoImg = { url: 'https://files.catbox.moe/t7uytz.png' }
   }
 
-  let estadoTexto = isEnable ? 'Activado 🌀' : 'Desactivado ✖️'
+  let estadoTexto = isEnable? 'Activado 🌀' : 'Desactivado ✖️'
 
   let statusTxt = `🤖 *[ For Three Bot]* 🤖\n\n`
   statusTxt += `⚙️ *Función:* ${type}\n`
@@ -76,14 +79,18 @@ case 'detect':
   statusTxt += `⚙️ *Sistema Automatizado* 🌀`
 
   await conn.sendMessage(m.chat, {
-    image: catalogoImg.byteLength ? catalogoImg : { url: catalogoImg.url },
+    image: catalogoImg.byteLength? catalogoImg : { url: catalogoImg.url },
     caption: statusTxt,
     mentions: [m.sender]
   }, { quoted: m })
+
+  // GUARDAR LA BASE DE DATOS - ESTO ES LO IMPORTANTE
+  if (global.db.write) await global.db.write()
 }
 
 handler.help = ['welcome', 'antilink', 'antibot', 'modoadmin', 'subbots', 'nsfw', 'audios', 'antiprivado', 'detect'].map(v => v + ' on/off')
 handler.tags = ['config']
 handler.command = ['welcome', 'bienvenida', 'subbots', 'serbot', 'antispam', 'antilink', 'antibot', 'modoadmin', 'nsfw', 'antinopor', 'audios', 'autoleer', 'autoread', 'antiprivado', 'detect']
+handler.group = true
 
 export default handler
