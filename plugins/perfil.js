@@ -1,6 +1,8 @@
-let perfil = async (m, { conn }) => {
+import fetch from 'node-fetch'
+
+let handler = async (m, { conn }) => {
     let user = m.sender
-    let name = conn.getName(user)
+    let name = await conn.getName(user)
     let tag = '@' + user.split('@')[0]
     let nivel = Math.floor(Math.random() * 100) + 1
     let xp = Math.floor(Math.random() * 5000)
@@ -30,39 +32,22 @@ let perfil = async (m, { conn }) => {
 
 ${rango.includes('Rey')? '👑 Todos inclínense ante su majestad' : 'Sigue subiendo para ser Rey/Reyna'}`
 
-    // SACAR FOTOS
-    let ppUser, ppGroup
-    try {
-        ppUser = await conn.profilePictureUrl(user, 'image')
-    } catch {
-        ppUser = 'https://i.imgur.com/2dzxI5A.png' // foto por defecto
-    }
-
+    // SACAR FOTO
+    let pp
     try {
         if (m.isGroup) {
-            ppGroup = await conn.profilePictureUrl(m.chat, 'image')
+            pp = await conn.profilePictureUrl(m.chat, 'image')
+        } else {
+            pp = await conn.profilePictureUrl(user, 'image')
         }
     } catch {
-        ppGroup = null
+        pp = 'https://i.imgur.com/2dzxI5A.png'
     }
 
-    // ENVIAR CON FOTO
-    if (ppGroup) {
-        await conn.sendMessage(m.chat, {
-            image: { url: ppGroup },
-            caption: txt,
-            mentions:
-        })
-    } else {
-        await conn.sendMessage(m.chat, {
-            image: { url: ppUser },
-            caption: txt,
-            mentions:
-        })
-    }
+    await conn.sendFile(m.chat, pp, 'perfil.jpg', txt, m, false, { mentions: })
 }
 
-perfil.help = ['perfil']
-perfil.tags = ['main']
-perfil.command = ['perfil', 'profile', 'p']
+handler.help = ['perfil']
+handler.tags = ['main']
+handler.command = ['perfil', 'profile', 'p']
 export default handler
