@@ -18,4 +18,6 @@ let handler = async (m, { conn }) => {
 }
 
 handler.command = ['frase']
+handler.tag = ['fun'] // <- ESTA ES LA CATEGORÍA JUEGOS/DIVERSIÓN
+handler.help = ['frase']
 export default handler
