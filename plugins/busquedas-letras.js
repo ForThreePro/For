@@ -33,4 +33,4 @@ ${res.lyrics}
 handler.help = ['letra <cancion>']
 handler.tags = ['search']
 handler.command = /^(letra|lyrics)$/i
-export default handler
+export default handler 
