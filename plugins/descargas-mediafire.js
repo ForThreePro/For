@@ -37,7 +37,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 }
 
 handler.help = ['mediafire']
-handler.tags = ['downloader']
+handler.tags = ['descargas']
 handler.command = /^(mediafire|mf|mediafiredl)$/i
 
 export default handler
