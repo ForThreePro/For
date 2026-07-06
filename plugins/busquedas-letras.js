@@ -8,9 +8,20 @@ let handler = async (m, { conn, text }) => {
         
         if(!res) return m.reply('❌ No se encontró la letra')
         
-        let txt = `*Letra* \n\n📃 *Título:* ${res.title}\n👥 *Autor:* ${res.artists}\n\n🛸╞═════ 𝗟𝗲𝘁𝗿𝗮 ═════╡🛸\n\n${res.lyrics}\n\n> *Solecito Shopp Bot*`
+        let txt = `📃 *Título:* ${res.title}
+👥 *Autor:* ${res.artists}
+
+🛸╞═════ 𝗟𝗲𝘁𝗿𝗮 ═════╡🛸
+
+${res.lyrics}
+
+> *Solecito Shopp Bot*`
         
-        await m.reply(txt)
+        await conn.sendMessage(m.chat, { 
+            image: { url: res.thumbnail }, 
+            caption: txt 
+        }, { quoted: m })
+        
         await m.react('✅')
         
     } catch (e) { 
