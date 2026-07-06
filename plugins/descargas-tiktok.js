@@ -1,21 +1,72 @@
-let handler = async (m, { conn, text, command }) => {
-    if (!text) throw 'Ingresa qué quieres buscar'
+/**
+ * 📂 COMANDO: tiktok2
+ * 📝 DESCRIPCIÓN: Descarga avanzada de TikTok con link de API visible.
+ * 👤 CREADOR: Barboza Developer
+ * ⚡ CANAL: Barboza Developer x Zona Developers
+ * 🔌 API: EvoGB API (https://api.evogb.org)
+ */
+
+import axios from 'axios'
+
+async function tiktokScraper(url) {
     try {
-        if (command === 'tiktoksearch') {
-            let res = await (await fetch(`https://api.evogb.org/search/tiktok?query=${text}&key=sasuke`)).json()
-            let video = res.data[0]
-            let caption = `*Título:* ${video.title}\n*Autor:* ${video.author.nickname}`
-            await conn.sendFile(m.chat, video.dl, 'tiktok.mp4', caption, m)
-        } else if (command === 'tiktok') {
-            let res = await (await fetch(`https://api.evogb.org/dl/tiktok?url=${text}&key=sasuke`)).json()
-            let data = res.data
-            await conn.sendFile(m.chat, Array.isArray(data.dl) ? data.dl[0] : data.dl, 'tiktok.mp4', data.title, m)
+        const key64 = 'c2FzdWtl' 
+        const decodedKey = Buffer.from(key64, 'base64').toString('utf-8')
+
+        const { data } = await axios.get(`https://api.evogb.org/dl/tiktok?url=${encodeURIComponent(url)}&key=${decodedKey}`)
+
+        if (!data.status) return { status: false }
+        return {
+            status: true,
+            title: data.data.title,
+            author: data.data.author.nickname,
+            user: data.data.author.unique_id,
+            duration: data.data.duration,
+            likes: data.data.stats.likes,
+            shares: data.data.stats.shares,
+            download: data.data.dl
         }
     } catch (e) {
-        throw 'Error al obtener el video'
+        return { status: false }
     }
 }
-handler.help = ['tiktok <link>', 'tiktoksearch <busqueda>']
-handler.tags = ['downloader', 'search']
-handler.command = /^(tiktok|tiktoksearch)$/i
+
+var handler = async (m, { conn, text, usedPrefix, command }) => {
+    let query = text ? text.trim() : (m.quoted?.text || null)
+    if (!query) return conn.reply(m.chat, `✨ *¿Qué video deseas bajar?*\n\n> *Ejemplo:* ${usedPrefix + command} https://vt.tiktok.com/...`, m)
+
+    await m.react('⚡')
+
+    const res = await tiktokScraper(query)
+
+    if (!res.status) {
+        await m.react('❌')
+        return m.reply('⚠️ *Error al procesar el enlace.*')
+    }
+
+    let ui = `┏━━━━━━━━━━━━━━━━┓\n`
+    ui += `┃  ⭐ *TIKTOK DOWNLOAD* ┃\n`
+    ui += `┗━━━━━━━━━━━━━━━━┛\n\n`
+    ui += `📝 *TÍTULO:* ${res.title.slice(0, 100)}...\n`
+    ui += `👤 *AUTOR:* ${res.author} (@${res.user})\n`
+    ui += `⏱️ *DURACIÓN:* ${res.duration}\n`
+    ui += `📊 *STATS:* ❤️ ${res.likes.toLocaleString()} | 🔄 ${res.shares.toLocaleString()}\n\n`
+    ui += `🔌 *API:* https://api.evogb.org\n`
+    ui += `⚡ *Powered by Barboza Developer*\n`
+    ui += `🌐 *Zona Developers*`
+
+    await conn.sendMessage(m.chat, { 
+        video: { url: res.download }, 
+        caption: ui,
+        mimetype: 'video/mp4',
+        fileName: `tiktok_v2_barboza.mp4`
+    }, { quoted: m })
+
+    await m.react('✅')
+}
+
+handler.help = ['tiktok']
+handler.tags = ['downloader']
+handler.command = /^(tiktok|tt)$/i
+
 export default handler
