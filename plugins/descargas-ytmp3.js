@@ -1,25 +1,44 @@
-import yts from 'yt-search'
-import fetch from 'node-fetch'
+//código de ytmp3
+// code creador por barboza 
+// Se te agradece que dejes mis créditos gracias disfruta el código
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
-  if (!text) return m.reply(`🤖 *🚩 *Ingresa un enlace de YouTube.*`)
-  
-  let res = await yts(text)
-  let vid = res.videos[0]
-  if (!vid) return m.reply(`⚠️ *No se encontró el video.*`)
+import axios from "axios"
 
-  let apiUrl = `https://api.evogb.org/dl/ytmp3?url=${encodeURIComponent(vid.url)}&key=sasuke`
-  let json = await (await fetch(apiUrl)).json()
-  if (!json.status) return m.reply(`❌ *Error al procesar el audio.*`)
+const handler = async (m, { conn, text, usedPrefix, command }) => {
+    if (!text) return conn.reply(m.chat, `*¡Hola!* Ingresa el enlace de YouTube.\n\n*Ejemplo:* ${usedPrefix}${command} https://youtu.be/5M_n2UCe7DQ`, m)
 
-  let cap = `🤖 *[ For Three ]* 🤖\n\n🎶 *Título:* ${vid.title}\n📁 *Formato:* MP3\n\n⚙️ *Descargando...* 🌀`
+    await m.react('⏳')
 
-  await conn.sendMessage(m.chat, { image: { url: vid.thumbnail }, caption: cap }, { quoted: m })
-  await conn.sendMessage(m.chat, { audio: { url: json.data.dl }, mimetype: 'audio/mpeg' }, { quoted: m })
+    try {
+        const { data } = await axios.get(`https://api.delirius.store/download/ytmp3?url=${text}`)
+
+        if (!data.status || !data.data) throw new Error()
+
+        const { title, author, image, download } = data.data
+
+        const info = `*〔 YOUTUBE MP3 〕*\n\n*Título:* ${title}\n*Canal:* ${author}\n\n_Enviando audio..._`
+
+        await conn.sendMessage(m.chat, { 
+            image: { url: image }, 
+            caption: info 
+        }, { quoted: m })
+
+        await conn.sendMessage(m.chat, { 
+            audio: { url: download }, 
+            mimetype: 'audio/mpeg', 
+            fileName: `${title}.mp3` 
+        }, { quoted: m })
+
+        await m.react('✅')
+
+    } catch (e) {
+        await m.react('❌')
+        await conn.reply(m.chat, `⚠️ No se pudo procesar la descarga.`, m)
+    }
 }
 
-handler.help = ['ytmp3 <url>']
-handler.tags = ['downloader']
-handler.command = /^ytmp3$/i
+handler.help = ['ytmp3']
+handler.tags = ['donwloader']
+handler.command = ['ytmp3', 'audio']
 
 export default handler
