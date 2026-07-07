@@ -1,7 +1,7 @@
 let handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
     let chat = m.chat
     
-    // INICIALIZAR DB POR GRUPO - FORMA QUE SI FUNCIONA
+    // INICIALIZAR DB POR GRUPO
     global.db.data.lista = global.db.data.lista || {}
     if (Object.keys(global.db.data.lista).length === 0) {
         global.db.data.lista = {
@@ -18,9 +18,13 @@ let handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
     let esDomingo = dia === 'domingo'
     let diaGuardar = esDomingo ? 'extra' : dia
 
-    // .VER
+    // .VER CON FOTO
     if (command === 'ver') {
         let nombreGrupo = await conn.getName(chat).catch(_ => 'Grupo')
+        
+        // DETECTAR FOTO DEL GRUPO
+        let pp = await conn.profilePictureUrl(chat, 'image').catch(_ => null)
+
         let texto = `📋 *LISTA SEMANAL*\n*Grupo:* ${nombreGrupo}\n*Hoy:* ${esDomingo ? 'DOMINGO' : dia.toUpperCase()} | ${hora}\n\n`
         let total = 0
         for (let d of ['lunes','martes','miercoles','jueves','viernes','sabado','extra']) {
@@ -33,10 +37,16 @@ let handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
             }
         }
         texto += `*TOTAL ANOTADOS: ${total}*`
-        return m.reply(texto.trim())
+
+        // ENVIAR CON FOTO SI HAY, SI NO SOLO TEXTO
+        if (pp) {
+            return conn.sendMessage(chat, { image: { url: pp }, caption: texto.trim() })
+        } else {
+            return m.reply(texto.trim())
+        }
     }
 
-    // .RESET
+    // .RESET SOLO ADMINS
     if (command === 'reset') {
         if (!isAdmin && !isOwner) return m.reply('❌ *Solo Admins*')
         if (args[0] === 'extra') {
