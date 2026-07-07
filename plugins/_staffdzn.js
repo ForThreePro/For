@@ -4,9 +4,9 @@ let handler = async (m, { conn, command, args, isAdmin, isOwner }) => {
   let diasNums = {'1':'lunes','2':'martes','3':'miercoles','4':'jueves','5':'viernes','6':'sabado'}
 
   // FIX DEFINITIVO
-  global.db.data.dias = global.db.data.dias || {}
-  global.db.data.dias = global.db.data.dias || { lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [] }
-  let db = global.db.data.dias
+  global.db.data.dias[chat]= global.db.data.dias[chat] || {}
+  global.db.data.dias[chat] = global.db.data.dias[chat] || { lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [] }
+  let db = global.db.data.dias[chat]
 
   if (cmd.startsWith('set')) {
     if (!isAdmin &&!isOwner) return m.reply('❌ Solo admins')
