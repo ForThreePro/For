@@ -1,12 +1,12 @@
 let handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
   let chat = m.chat
-  let user = m.sender
 
-  // 1. CREAR DB SI NO EXISTE
-  if (!global.db.data.lista) global.db.data.lista = {
+  // 1. CREAR DB SI NO EXISTE - ARREGLO AQUI
+  if (!global.db.data.lista) global.db.data.lista = {}
+  if (!global.db.data.lista[chat]) global.db.data.lista[chat] = {
     lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], extra: []
   }
-  let db = global.db.data.lista
+  let db = global.db.data.lista[chat] // <-- Ahora si apunta al chat
 
   // 2. SACAR DIA Y HORA DE LIMA
   let tz = 'America/Lima'
@@ -17,7 +17,7 @@ let handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
   let esDomingo = dia === 'domingo'
   let diaGuardar = esDomingo? 'extra' : dia
 
-  // 3. COMANDO.ver - CUALQUIERA PUEDE
+  // 3. COMANDO.ver
   if (command === 'ver') {
     let texto = `📋 *LISTA SEMANAL*\nHoy: *${esDomingo? 'DOMINGO' : dia.toUpperCase()}* | ${hora}\n\n`
     let hayAlgo = false
@@ -50,7 +50,7 @@ let handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
     }
   }
 
-  // 5. COMANDO.lista - CUALQUIERA PUEDE ANOTAR
+  // 5. COMANDO.lista
   let juntar = args.join(' ')
   let sep = juntar.split('|').map(v => v.trim())
   let [nombre, numero, premio, extra] = sep
@@ -66,7 +66,7 @@ let handler = async (m, { conn, args, command, isAdmin, isOwner }) => {
   let guardarEn = extra?.toLowerCase() === 'extra'? 'extra' : diaGuardar
   let tag = guardarEn === 'extra'? (esDomingo? '🛒' : '📦') : '✅'
 
-  db[guardarEn].push({n: nombre, num: numero, p: premio, tag: tag, hora: hora})
+  db[guardarEn].push({n: nombre, num: numero, p: premio, tag: tag, hora: hora}) // <- AQUI YA NO DA ERROR
   await global.db.write()
 
   let aviso = esDomingo? '⚠️ *DOMINGO - Dia de Ventas*\nSe guardo en EXTRA 🛒\n\n' : ''
