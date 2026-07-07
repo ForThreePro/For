@@ -1,42 +1,17 @@
-/**
- * 📂 COMANDO: Lux Remove BG
- * 👤 CREADOR: Whois Yallico
- * ⚡ CANAL: For Three
- */
-import fetch from "node-fetch"
-import FormData from "form-data"
-
-let handler = async (m, { conn }) => {
-    let q = m.quoted ? m.quoted : m
-    if (!(q.msg || q).mimetype?.startsWith('image')) {
-        return m.reply(`*💎 LUX REMOVE BG*\n\nResponde a una imagen con .luxremovebg`)
-    }
-
-    await m.react('⏳')
-    
-    try {
-        let img = await q.download()
-        let form = new FormData()
-        form.append('image', img, { filename: 'image.jpg' })
-
-        let res = await fetch('https://luxinfinity.vercel.app/api/removebg', {
-            method: 'POST',
-            body: form,
-            headers: form.getHeaders()
-        })
-        
-        let json = await res.json()
-        if (!json.result) throw 'Error al procesar'
-
-        await conn.sendFile(m.chat, json.result, 'luxnobg.png', `*💎 LUX REMOVE BG*\n\n✅ Fondo eliminado\n👤 *Creador:* Whois Yallico`, m)
-        await m.react('✅')
-        
-    } catch (e) {
-        await m.react('❌')
-        m.reply(`❌ Error: ${e}`)
-    }
-}
-
-handler.command = /^(luxremovebg|bg)$/i
-handler.limit = true
-export default handler
+import uploadImage from '../lib/uploadImage.js';
+import {sticker} from '../lib/sticker.js';
+const handler = async (m, {conn, text}) => {
+  try {
+    const q = m.quoted ? m.quoted : m;
+    const mime = (q.msg || q).mimetype || '';
+    const img = await q.download();
+    const url = await uploadImage(img);
+    const sremovebg = global.API(`https://api.lolhuman.xyz/api/removebg?apikey=${lolkeysapi}&img=${url}`);
+    const stickerr = await sticker(false, sremovebg, global.packname, global.author);
+    conn.sendFile(m.chat, stickerr, 'sticker.webp', '', m, {asSticker: true});
+  } catch (e) {
+    m.reply('*[❗𝐈𝐍𝐅𝐎❗] 𝙻𝙾 𝚂𝙸𝙴𝙽𝚃𝙾, 𝙾𝙲𝚄𝚁𝚁𝙸𝙾 𝚄𝙽 𝙴𝚁𝚁𝙾𝚁, 𝚅𝚄𝙴𝙻𝚅𝙰 𝙰 𝙸𝙽𝚃𝙴𝚁𝙽𝚃𝙰𝚁𝙻𝙾, 𝙽𝙾 𝙾𝙻𝚅𝙸𝙳𝙴 𝚁𝙴𝚂𝙿𝙾𝙽𝙳𝙴𝚁 𝙰 𝚄𝙽𝙰 𝙸𝙼𝙰𝙶𝙴𝙽 𝙻𝙰 𝙲𝚄𝙰𝙻 𝚂𝙴 𝙲𝙾𝙽𝚅𝙴𝚁𝚃𝙸𝚁𝙰 𝙴𝙽 𝚂𝚃𝙸𝙲𝙺𝙴𝚁 𝚂𝙸𝙽 𝙵𝙾𝙽𝙳𝙾*');
+  }
+};
+handler.command = /^sremovebg|removebg$/i;
+export default handler;
