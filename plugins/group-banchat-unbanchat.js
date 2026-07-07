@@ -27,7 +27,7 @@ let handler = async (m, { conn, isOwner, isAdmin, isROwner, command }) => {
 }
 
 handler.help = ['banchat', 'unbanchat']
-handler.tags = ['grupos']
+handler.tags = ['group']
 handler.command = /^(banchat|banearchat|unbanchat|desbanearchat)$/i
 
 export default handler
