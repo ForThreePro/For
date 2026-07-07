@@ -6,77 +6,72 @@ let handler = async (m, { conn, usedPrefix }) => {
   let categories = {}
   let totalCmds = 0
 
-  // ESCANEA TODO Y AGRUPA POR TAGS
   for (let plugin of plugins) {
     let tags = plugin.tags || ['sin categoria']
     let helps = [].concat(plugin.help).filter(Boolean)
     totalCmds += helps.length
-
     tags.forEach(tag => {
       if (!categories[tag]) categories[tag] = []
       categories[tag].push(...helps)
     })
   }
 
+  // AQUI PERSONALIZAS LOS NOMBRES DE LAS CATEGORÍAS 👇
+  const nombreCategorias = {
+    'fun': '🎮 ZONA GAMER',
+    'info': 'ℹ️ CENTRO DE INFORMACIÓN',
+    'main': '⚙️ SISTEMA PRINCIPAL',
+    'sorteos': '🎁 SORTEOS PREMIUM',
+    'ventas bot': '🛒 TIENDA OFICIAL',
+    'group': '👥 CONTROL DE GRUPOS',
+    'downloader': '📥 DOWNLOADER PRO',
+    'rg': '👤 REGISTRO VIP',
+    'anime': '🎌 MUNDO ANIME',
+    'admin': '👑 PANEL ADMINISTRADOR',
+    'search': '🔍 BUSCADOR GLOBAL',
+    'sticker': '🏷️ FABRICA DE STICKERS',
+    'tools': '🛠️ HERRAMIENTAS',
+    'económia': '💰 BANCO CENTRAL',
+    'nsfw': '🔞 ZONA 18+',
+    'sin categoria': '📦 OTROS COMANDOS'
+  }
+
   let uptime = process.uptime()
   let h = Math.floor(uptime / 3600)
   let m_ = Math.floor(uptime % 3600 / 60)
 
-  // EMOJIS AUTOMÁTICOS PARA CUALQUIER CATEGORÍA
-  const getEmoji = (cat) => {
-    cat = cat.toLowerCase()
-    if(cat.includes('fun')) return '🎮'
-    if(cat.includes('info')) return 'ℹ️'
-    if(cat.includes('main')) return '⚙️'
-    if(cat.includes('sorteo')) return '🎁'
-    if(cat.includes('venta')) return '🛒'
-    if(cat.includes('group') || cat.includes('grupo')) return '👥'
-    if(cat.includes('down') || cat.includes('descarga')) return '📥'
-    if(cat.includes('rg') || cat.includes('registro')) return '👤'
-    if(cat.includes('game') || cat.includes('juego')) return '🎯'
-    if(cat.includes('admin')) return '👑'
-    if(cat.includes('anime')) return '🎌'
-    if(cat.includes('search') || cat.includes('buscar')) return '🔍'
-    if(cat.includes('sticker')) return '🏷️'
-    if(cat.includes('tools') || cat.includes('herramienta')) return '🛠️'
-    return '🗂️' // emoji por defecto
-  }
-
-  // ARMAMOS EL MENÚ
   let txt = `
-┏━━━━━━━━━━━━━━━━━━━━━┓
-┃ 🤖 FOR THREE BOT v3.2 ┃
-┗━━━━━━━━━━━━━━━━━━━━━┛
+✧･ﾟ: *✧･ﾟ:* FOR THREE BOT *:･ﾟ✧*:･ﾟ✧
+           𝘃3.2 𝗖𝗥𝗬𝗦𝗧𝗔𝗟 𝗘𝗗𝗜𝗧𝗜𝗢𝗡
 
-👤 *Usuario:* ${taguser}
-⚙️ *Prefijo:* [${usedPrefix}]
-⏱️ *Activo:* ${h}h ${m_}m
-📦 *Total Comandos:* ${totalCmds}
-📂 *Categorías:* ${Object.keys(categories).length}
+╭─── ʚ 𝗜𝗡𝗙𝗢 𝗗𝗘𝗟 𝗨𝗦𝗨𝗔𝗥𝗜𝗢 ɞ ───╮
+│ 👤 ${taguser}
+│ ⚡ Prefijo: 『 ${usedPrefix} 』
+│ ⏱️ Activo: ${h}h ${m_}m
+│ 📦 Comandos: ${totalCmds}
+│ 📂 Categorías: ${Object.keys(categories).length}
+╰───────────────────────────────╯
 
-━━━━━━━━━━━━━━━━━━━━━━━━━
 `.trim() + '\n\n'
 
-  // ORDENA LAS CATEGORÍAS ALFABÉTICAMENTE
   let sortedCats = Object.keys(categories).sort()
 
   for (let cat of sortedCats) {
     let cmds = [...new Set(categories[cat])].sort()
-    let emoji = getEmoji(cat)
-    let titulo = `${emoji} ${cat.toUpperCase()}`
+    // Usa nombre personalizado o el original
+    let titulo = nombreCategorias[cat] || `✦ ${cat.toUpperCase()}`
 
-    txt += `*${titulo}* [${cmds.length}]\n`
-    txt += `┌────────────────\n`
+    txt += `╭─❒ ${titulo} [${cmds.length}]\n`
     cmds.forEach(cmd => {
-      txt += `│ 🌀 ${usedPrefix}${cmd}\n`
+      txt += `│ ✦ ${usedPrefix}${cmd}\n`
     })
-    txt += `└────────────────\n\n`
+    txt += `╰─────────────────────\n\n`
   }
 
-  txt += `━━━━━━━━━
-> *Tip:* Usa ${usedPrefix}comando para ejecutar
-> *Comprar Bot:* https://bandidope.github.io/For-Three-Bot
-`
+  txt += `✧━━━━━━━━━━━✧
+   © 2026 FOR THREE BOT
+   github.com/BandidoPe
+✧━━━━━━━━━━━━━━━━━━━✧`
 
   await conn.sendMessage(m.chat, {
     image: { url: imgUrl },
