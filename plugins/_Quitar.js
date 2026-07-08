@@ -1,5 +1,5 @@
 /*
-  📂 COMANDO: Remove BG Online Sin Instalar
+  📂 COMANDO: Remove BG Xteam
   👤 CREADOR: Whois Yallico
   ⚡ CANAL: For Three
 */
@@ -42,25 +42,23 @@ const handler = async (m, { conn }) => {
   if (!imgBuffer) return conn.reply(m.chat, `📸 Responde a una imagen`, m)
 
   try {
-    // API GRATIS: lolhuman.dev - no pide key para remove bg
     const form = new FormData()
-    form.append('img', imgBuffer, { filename: 'image.jpg' })
+    form.append('file', imgBuffer, { filename: 'image.jpg' })
 
-    const res = await fetch('https://api.lolhuman.xyz/api/removebg?apikey=DEMO_KEY', {
+    const res = await fetch('https://api.xteam.xyz/rmbg?apikey=APIKEY', {
       method: 'POST',
       body: form
     })
 
-    const data = await res.json()
-
-    if (!data.result) throw new Error('La API falló, intenta de nuevo')
+    if (!res.ok) throw new Error(`API Error ${res.status}`)
+    const buffer = Buffer.from(await res.arrayBuffer())
 
     await conn.sendMessage(m.chat, {
-      image: { url: data.result },
+      image: buffer,
       mimetype: 'image/png',
       caption: `╭─❒「 ✨ FOR THREE REMOVE BG 」
 │
-│ ✅ Fondo eliminado con API
+│ ✅ Fondo eliminado
 │ 👤 Creador: Whois Yallico
 ╰─⬣`
     }, { quoted: m })
@@ -69,13 +67,10 @@ const handler = async (m, { conn }) => {
 
   } catch (e) {
     await m.react('🔴')
-    conn.reply(m.chat, `❌ Error: ${e.message}\n\nLa API demo a veces falla. Intenta en 1 min`, m)
+    conn.reply(m.chat, `❌ Error: ${e.message}`, m)
   }
 }
 
-handler.help = ['rmbg', 'nobg']
-handler.tags = ['tools', 'for three']
-handler.command = /^(rmbg|nobg|bg|ftbg)$/i
+handler.command = /^(rmbg|bg|ftbg)$/i
 handler.limit = true
-
 export default handler
